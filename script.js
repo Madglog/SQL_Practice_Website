@@ -371,9 +371,9 @@ function setupTextareaEnhancements() {
             const indentMatch = currentLine.match(/^(\s*)/);
             let indent = indentMatch ? indentMatch[1] : '';
 
-            // Check if line ends with opening bracket or comma
+            // Check if line ends with opening bracket
             const trimmedLine = currentLine.trim();
-            if (trimmedLine.endsWith('(') || trimmedLine.endsWith(',')) {
+            if (trimmedLine.endsWith('(')) {
                 indent += '    '; // Add extra indentation
             }
 
@@ -576,7 +576,7 @@ addButtonFeedback();
 console.log('%c🗄️ SQL Practice Hub', 'font-size: 20px; font-weight: bold; color: #D97757;');
 console.log('%cKeyboard shortcuts:', 'font-size: 14px; font-weight: bold; margin-top: 10px;');
 console.log('Tab              : Insert 4 spaces');
-console.log('Enter (after ()  : Auto-indent');
+console.log('Enter (after "(") : Auto-indent with extra level');
 console.log('Ctrl/Cmd + Enter : Check answer');
 console.log('←  →             : Navigate between questions (when not typing)');
 console.log('H                : Toggle hint (when not typing)');
