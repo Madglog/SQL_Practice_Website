@@ -27,95 +27,259 @@ function init() {
     loadQuestion(currentQuestionIndex);
     updateNavigationButtons();
     attachEventListeners();
+    setupTextareaEnhancements();
 }
 
-// Normalize SQL for comparison
+// Enhanced SQL normalization - very flexible
 function normalizeSQL(sql) {
-    return sql
+    let normalized = sql
         .toLowerCase()
-        .replace(/\s+/g, ' ')           // Replace multiple spaces with single space
-        .replace(/\(\s+/g, '(')         // Remove space after opening parenthesis
-        .replace(/\s+\)/g, ')')         // Remove space before closing parenthesis
-        .replace(/,\s+/g, ',')          // Normalize commas
-        .replace(/;\s*$/g, '')          // Remove trailing semicolon
+        // Remove comments
+        .replace(/--.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        // Normalize whitespace
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([(),;=<>])\s*/g, '$1')
+        // Handle common variations
+        .replace(/varchar2/g, 'varchar')
+        .replace(/number\([^)]*\)/g, 'number')
+        .replace(/decimal\([^)]*\)/g, 'decimal')
+        .replace(/int(?:eger)?/g, 'int')
+        // Remove trailing semicolon
+        .replace(/;+$/g, '')
         .trim();
+
+    // Normalize column definitions - order doesn't matter for constraints
+    normalized = normalizeConstraintOrder(normalized);
+
+    return normalized;
 }
 
-// Extract SQL keywords from a query
-function extractKeywords(sql) {
-    const normalized = normalizeSQL(sql);
-    const keywords = [
-        'select', 'from', 'where', 'insert', 'update', 'delete', 'create', 'alter', 'drop',
-        'table', 'into', 'values', 'set', 'join', 'inner', 'left', 'right', 'outer', 'on',
-        'group by', 'order by', 'having', 'distinct', 'as', 'and', 'or', 'not', 'in', 'between',
-        'like', 'is null', 'is not null', 'exists', 'union', 'truncate', 'rename', 'modify',
-        'add', 'constraint', 'primary key', 'foreign key', 'references', 'unique', 'check',
-        'default', 'not null', 'count', 'sum', 'avg', 'max', 'min', 'round', 'upper', 'lower',
-        'concat', 'substring', 'length', 'trim', 'cast', 'to_char', 'to_number', 'sysdate',
-        'extract', 'commit', 'rollback', 'savepoint', 'grant', 'revoke', 'view', 'index',
-        'procedure', 'function', 'trigger', 'cursor', 'declare', 'begin', 'end', 'if', 'then',
-        'else', 'elsif', 'loop', 'while', 'for', 'exit', 'return', 'varchar', 'varchar2',
-        'number', 'integer', 'int', 'decimal', 'date', 'timestamp', 'char', 'blob', 'clob'
-    ];
+// Normalize constraint order in CREATE/ALTER statements
+function normalizeConstraintOrder(sql) {
+    // For column definitions like: col INT PRIMARY KEY NOT NULL
+    // Extract and sort constraints
+    const constraintPattern = /(primary key|foreign key|unique|not null|check|default|references)/gi;
 
-    const found = new Set();
-    keywords.forEach(keyword => {
-        if (normalized.includes(keyword)) {
-            found.add(keyword);
+    // Split by comma to handle each column/constraint separately
+    const parts = sql.split(',');
+    const normalizedParts = parts.map(part => {
+        const constraints = [];
+        let basePart = part;
+
+        // Extract constraints
+        let match;
+        const regex = new RegExp(constraintPattern);
+        while ((match = regex.exec(part)) !== null) {
+            constraints.push(match[0].toLowerCase());
+        }
+
+        // Remove constraints and reconstruct with sorted order
+        if (constraints.length > 0) {
+            basePart = part.replace(constraintPattern, '').replace(/\s+/g, ' ').trim();
+            constraints.sort();
+            return basePart + ' ' + constraints.join(' ');
+        }
+
+        return part;
+    });
+
+    return normalizedParts.join(',');
+}
+
+// Extract SQL tokens (keywords, identifiers, values)
+function extractTokens(sql) {
+    const normalized = normalizeSQL(sql);
+
+    // Split by common delimiters but keep them
+    const tokens = normalized
+        .split(/([(),;=<>])/)
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+    return tokens;
+}
+
+// Extract essential SQL components
+function extractComponents(sql) {
+    const normalized = normalizeSQL(sql);
+    const components = {
+        operation: '',
+        tables: [],
+        columns: [],
+        constraints: [],
+        keywords: new Set(),
+        values: []
+    };
+
+    // Detect main operation
+    if (/^create\s+table/i.test(sql)) components.operation = 'create_table';
+    else if (/^alter\s+table/i.test(sql)) components.operation = 'alter_table';
+    else if (/^drop\s+table/i.test(sql)) components.operation = 'drop_table';
+    else if (/^truncate/i.test(sql)) components.operation = 'truncate';
+    else if (/^insert\s+into/i.test(sql)) components.operation = 'insert';
+    else if (/^update/i.test(sql)) components.operation = 'update';
+    else if (/^delete/i.test(sql)) components.operation = 'delete';
+    else if (/^select/i.test(sql)) components.operation = 'select';
+
+    // Extract table names
+    const tableMatches = sql.match(/(?:from|into|table|join|update)\s+(\w+)/gi);
+    if (tableMatches) {
+        tableMatches.forEach(match => {
+            const table = match.split(/\s+/).pop();
+            if (table) components.tables.push(table.toLowerCase());
+        });
+    }
+
+    // Extract column names (simplified)
+    const columnMatches = sql.match(/\b(\w+)\s+(?:varchar|int|number|decimal|date|char)/gi);
+    if (columnMatches) {
+        columnMatches.forEach(match => {
+            const col = match.split(/\s+/)[0];
+            if (col) components.columns.push(col.toLowerCase());
+        });
+    }
+
+    // Extract constraints
+    const constraints = ['primary key', 'foreign key', 'unique', 'not null', 'check', 'default', 'references'];
+    constraints.forEach(constraint => {
+        if (normalized.includes(constraint)) {
+            components.constraints.push(constraint);
         }
     });
 
-    return found;
+    // Extract SQL keywords
+    const keywords = [
+        'select', 'from', 'where', 'insert', 'into', 'values', 'update', 'set', 'delete',
+        'create', 'alter', 'drop', 'table', 'add', 'modify', 'column', 'rename', 'to',
+        'join', 'inner', 'left', 'right', 'outer', 'on', 'as', 'group by', 'order by',
+        'having', 'distinct', 'and', 'or', 'not', 'in', 'between', 'like', 'is null',
+        'exists', 'union', 'truncate', 'commit', 'rollback', 'savepoint'
+    ];
+
+    keywords.forEach(keyword => {
+        if (normalized.includes(keyword)) {
+            components.keywords.add(keyword);
+        }
+    });
+
+    return components;
 }
 
-// Calculate similarity score between two SQL queries
+// Calculate enhanced similarity score
 function calculateSimilarity(userSQL, correctSQL) {
     const userNormalized = normalizeSQL(userSQL);
     const correctNormalized = normalizeSQL(correctSQL);
 
-    // Exact match
+    // Exact match after normalization
     if (userNormalized === correctNormalized) {
         return 100;
     }
 
-    // Extract keywords
-    const userKeywords = extractKeywords(userSQL);
-    const correctKeywords = extractKeywords(correctSQL);
+    // Very close match (minor differences only)
+    const similarity = stringSimilarity(userNormalized, correctNormalized);
+    if (similarity > 0.95) {
+        return 100;
+    }
 
-    // Calculate keyword overlap
-    const intersection = new Set([...userKeywords].filter(k => correctKeywords.has(k)));
-    const union = new Set([...userKeywords, ...correctKeywords]);
+    // Component-based comparison
+    const userComponents = extractComponents(userSQL);
+    const correctComponents = extractComponents(correctSQL);
 
-    const keywordScore = union.size > 0 ? (intersection.size / union.size) * 100 : 0;
+    let score = 0;
+    let totalWeight = 0;
 
-    // Check for common patterns
-    let patternScore = 0;
-    const patterns = [
-        { regex: /create\s+table/i, weight: 10 },
-        { regex: /alter\s+table/i, weight: 10 },
-        { regex: /insert\s+into/i, weight: 10 },
-        { regex: /select\s+.*\s+from/i, weight: 10 },
-        { regex: /where/i, weight: 5 },
-        { regex: /join/i, weight: 8 },
-        { regex: /group\s+by/i, weight: 8 },
-        { regex: /order\s+by/i, weight: 5 },
-        { regex: /primary\s+key/i, weight: 8 },
-        { regex: /foreign\s+key/i, weight: 8 }
-    ];
+    // Operation match (30% weight)
+    const operationWeight = 30;
+    totalWeight += operationWeight;
+    if (userComponents.operation === correctComponents.operation) {
+        score += operationWeight;
+    }
 
-    patterns.forEach(({ regex, weight }) => {
-        const inUser = regex.test(userSQL);
-        const inCorrect = regex.test(correctSQL);
-        if (inUser && inCorrect) {
-            patternScore += weight;
-        }
-    });
+    // Table names (20% weight)
+    const tableWeight = 20;
+    totalWeight += tableWeight;
+    const tableScore = arrayOverlap(userComponents.tables, correctComponents.tables);
+    score += tableScore * tableWeight;
 
-    // Combine scores
-    return Math.min(100, (keywordScore * 0.6) + (patternScore * 0.4));
+    // Column names (15% weight)
+    const columnWeight = 15;
+    totalWeight += columnWeight;
+    const columnScore = arrayOverlap(userComponents.columns, correctComponents.columns);
+    score += columnScore * columnWeight;
+
+    // Constraints (20% weight)
+    const constraintWeight = 20;
+    totalWeight += constraintWeight;
+    const constraintScore = arrayOverlap(userComponents.constraints, correctComponents.constraints);
+    score += constraintScore * constraintWeight;
+
+    // Keywords (15% weight)
+    const keywordWeight = 15;
+    totalWeight += keywordWeight;
+    const userKeywords = Array.from(userComponents.keywords);
+    const correctKeywords = Array.from(correctComponents.keywords);
+    const keywordScore = arrayOverlap(userKeywords, correctKeywords);
+    score += keywordScore * keywordWeight;
+
+    return Math.round(Math.min(100, (score / totalWeight) * 100));
 }
 
-// Check user's answer
+// Calculate array overlap (Jaccard similarity)
+function arrayOverlap(arr1, arr2) {
+    if (arr1.length === 0 && arr2.length === 0) return 1;
+    if (arr1.length === 0 || arr2.length === 0) return 0;
+
+    const set1 = new Set(arr1);
+    const set2 = new Set(arr2);
+
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+
+    return intersection.size / union.size;
+}
+
+// Calculate string similarity (Levenshtein-based)
+function stringSimilarity(str1, str2) {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+
+    if (longer.length === 0) return 1.0;
+
+    const editDistance = levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+}
+
+// Levenshtein distance algorithm
+function levenshteinDistance(str1, str2) {
+    const matrix = [];
+
+    for (let i = 0; i <= str2.length; i++) {
+        matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= str1.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= str2.length; i++) {
+        for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+
+    return matrix[str2.length][str1.length];
+}
+
+// Check user's answer with improved logic
 function checkAnswer() {
     const userAnswer = sqlInput.value.trim();
     const correctAnswer = questions[currentQuestionIndex].answer;
@@ -128,16 +292,16 @@ function checkAnswer() {
     const similarity = calculateSimilarity(userAnswer, correctAnswer);
 
     if (similarity === 100) {
-        showFeedback('correct', 'Perfect!', 'Your answer is exactly correct. Well done!');
-    } else if (similarity >= 75) {
+        showFeedback('correct', 'Perfect!', 'Your answer is correct! Well done!');
+    } else if (similarity >= 85) {
         showFeedback('nearly-correct', 'Nearly there!',
-            `Your answer is very close (${Math.round(similarity)}% match). Check for minor differences in syntax, spacing, or keywords. Try comparing your answer with the correct one.`);
-    } else if (similarity >= 50) {
+            `Your answer is very close (${similarity}% match). There might be minor syntax differences, but you've got the right idea!`);
+    } else if (similarity >= 65) {
         showFeedback('nearly-correct', 'Good attempt!',
-            `You're on the right track (${Math.round(similarity)}% match). Your query has some correct elements, but needs more work. Consider checking the hint or reviewing the correct answer.`);
+            `You're on the right track (${similarity}% match). Check the structure and keywords. Consider reviewing the hint.`);
     } else {
         showFeedback('incorrect', 'Not quite right',
-            `Your answer doesn't match the expected solution (${Math.round(similarity)}% match). Try using the hint to guide you, or check the correct answer to learn the right approach.`);
+            `Your answer needs more work (${similarity}% match). Try using the hint to guide you, or check the correct answer to learn.`);
     }
 }
 
@@ -171,6 +335,64 @@ function clearInput() {
     sqlInput.value = '';
     feedbackBox.classList.add('hidden');
     sqlInput.focus();
+}
+
+// Setup textarea enhancements (Tab and Auto-indent)
+function setupTextareaEnhancements() {
+    sqlInput.addEventListener('keydown', function(e) {
+        // Handle Tab key - insert 4 spaces
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const value = this.value;
+
+            // Insert 4 spaces
+            this.value = value.substring(0, start) + '    ' + value.substring(end);
+
+            // Move cursor after the inserted spaces
+            this.selectionStart = this.selectionEnd = start + 4;
+            return;
+        }
+
+        // Handle Enter key - auto-indent
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const start = this.selectionStart;
+            const value = this.value;
+
+            // Get current line
+            const beforeCursor = value.substring(0, start);
+            const currentLineStart = beforeCursor.lastIndexOf('\n') + 1;
+            const currentLine = beforeCursor.substring(currentLineStart);
+
+            // Calculate current indentation
+            const indentMatch = currentLine.match(/^(\s*)/);
+            let indent = indentMatch ? indentMatch[1] : '';
+
+            // Check if line ends with opening bracket or comma
+            const trimmedLine = currentLine.trim();
+            if (trimmedLine.endsWith('(') || trimmedLine.endsWith(',')) {
+                indent += '    '; // Add extra indentation
+            }
+
+            // Insert newline with indentation
+            const newText = '\n' + indent;
+            this.value = value.substring(0, start) + newText + value.substring(this.selectionEnd);
+
+            // Move cursor to end of inserted text
+            this.selectionStart = this.selectionEnd = start + newText.length;
+            return;
+        }
+
+        // Handle Ctrl/Cmd + Enter to check answer
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            checkAnswer();
+            return;
+        }
+    });
 }
 
 // Load a specific question
@@ -279,15 +501,7 @@ function attachEventListeners() {
     prevBtn.addEventListener('click', prevQuestion);
     nextBtn.addEventListener('click', nextQuestion);
 
-    // Allow Ctrl/Cmd + Enter to check answer
-    sqlInput.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            checkAnswer();
-        }
-    });
-
-    // Keyboard navigation
+    // Keyboard navigation (only when not in textarea)
     document.addEventListener('keydown', (e) => {
         // Don't trigger shortcuts when typing in textarea
         if (document.activeElement === sqlInput) {
@@ -361,6 +575,8 @@ addButtonFeedback();
 // Add console message for developers
 console.log('%c🗄️ SQL Practice Hub', 'font-size: 20px; font-weight: bold; color: #D97757;');
 console.log('%cKeyboard shortcuts:', 'font-size: 14px; font-weight: bold; margin-top: 10px;');
+console.log('Tab              : Insert 4 spaces');
+console.log('Enter (after ()  : Auto-indent');
 console.log('Ctrl/Cmd + Enter : Check answer');
 console.log('←  →             : Navigate between questions (when not typing)');
 console.log('H                : Toggle hint (when not typing)');
