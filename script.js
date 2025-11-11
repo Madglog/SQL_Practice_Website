@@ -21,13 +21,77 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const progressFill = document.getElementById('progressFill');
 const progressText = document.getElementById('progressText');
+const topicsToggle = document.getElementById('topicsToggle');
+const topicsDropdown = document.getElementById('topicsDropdown');
+const topicsGrid = document.getElementById('topicsGrid');
 
 // Initialize the application
 function init() {
+    generateTopics();
     loadQuestion(currentQuestionIndex);
     updateNavigationButtons();
     attachEventListeners();
     setupTextareaEnhancements();
+}
+
+// Generate topics from questions
+function generateTopics() {
+    // Group questions by category
+    const topicsMap = new Map();
+
+    questions.forEach((question, index) => {
+        if (!topicsMap.has(question.category)) {
+            topicsMap.set(question.category, []);
+        }
+        topicsMap.get(question.category).push(index);
+    });
+
+    // Create topic items
+    topicsGrid.innerHTML = '';
+    topicsMap.forEach((questionIndices, category) => {
+        const topicItem = document.createElement('div');
+        topicItem.className = 'topic-item';
+        topicItem.innerHTML = `
+            <div class="topic-name">${category}</div>
+            <div class="topic-count">${questionIndices.length} question${questionIndices.length > 1 ? 's' : ''}</div>
+        `;
+
+        topicItem.addEventListener('click', () => {
+            jumpToTopic(questionIndices[0]);
+        });
+
+        topicsGrid.appendChild(topicItem);
+    });
+}
+
+// Toggle topics dropdown
+function toggleTopics() {
+    const isHidden = topicsDropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        topicsDropdown.classList.remove('hidden');
+        topicsToggle.classList.add('active');
+        topicsToggle.textContent = '✕ Close Topics';
+    } else {
+        topicsDropdown.classList.add('hidden');
+        topicsToggle.classList.remove('active');
+        topicsToggle.textContent = '📚 Browse Topics';
+    }
+}
+
+// Jump to a specific topic
+function jumpToTopic(questionIndex) {
+    currentQuestionIndex = questionIndex;
+    loadQuestion(currentQuestionIndex);
+    updateNavigationButtons();
+
+    // Close topics dropdown
+    topicsDropdown.classList.add('hidden');
+    topicsToggle.classList.remove('active');
+    topicsToggle.textContent = '📚 Browse Topics';
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Enhanced SQL normalization - very flexible
@@ -494,6 +558,7 @@ function nextQuestion() {
 
 // Attach event listeners
 function attachEventListeners() {
+    topicsToggle.addEventListener('click', toggleTopics);
     checkBtn.addEventListener('click', checkAnswer);
     clearBtn.addEventListener('click', clearInput);
     hintBtn.addEventListener('click', toggleHint);
@@ -574,11 +639,12 @@ addButtonFeedback();
 
 // Add console message for developers
 console.log('%c🗄️ SQL Practice Hub', 'font-size: 20px; font-weight: bold; color: #D97757;');
-console.log('%cKeyboard shortcuts:', 'font-size: 14px; font-weight: bold; margin-top: 10px;');
-console.log('Tab              : Insert 4 spaces');
-console.log('Enter (after "(") : Auto-indent with extra level');
-console.log('Ctrl/Cmd + Enter : Check answer');
-console.log('←  →             : Navigate between questions (when not typing)');
-console.log('H                : Toggle hint (when not typing)');
-console.log('A                : Toggle answer (when not typing)');
+console.log('%cFeatures:', 'font-size: 14px; font-weight: bold; margin-top: 10px;');
+console.log('📚 Browse Topics    : Jump to specific SQL topics');
+console.log('Tab                : Insert 4 spaces');
+console.log('Enter (after "(")  : Auto-indent with extra level');
+console.log('Ctrl/Cmd + Enter   : Check answer');
+console.log('←  →               : Navigate between questions (when not typing)');
+console.log('H                  : Toggle hint (when not typing)');
+console.log('A                  : Toggle answer (when not typing)');
 console.log(`\n📊 Total Questions: ${questions.length}`);

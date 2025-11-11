@@ -75,6 +75,101 @@ header h1 {
     font-weight: 400;
 }
 
+/* Topics Section */
+.topics-section {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.topics-toggle {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.topics-toggle:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.topics-toggle.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.topics-dropdown {
+    margin-top: 1rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.topic-item {
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.topic-item:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.topic-item .topic-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.topic-item .topic-count {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
 /* Progress Bar */
 .progress-bar {
     background: var(--bg-secondary);
@@ -519,6 +614,10 @@ footer {
     #sqlInput {
         min-height: 120px;
     }
+
+    .topics-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
 }
 
 @media (max-width: 480px) {
@@ -540,6 +639,10 @@ footer {
 
     .sql-input-section {
         padding: 1rem;
+    }
+
+    .topics-grid {
+        grid-template-columns: 1fr;
     }
 }
 
