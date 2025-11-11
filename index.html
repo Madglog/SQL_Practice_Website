@@ -32,22 +32,39 @@
                 <p id="questionDescription"></p>
             </div>
 
+            <div class="sql-input-section">
+                <label for="sqlInput">Your SQL Answer:</label>
+                <textarea id="sqlInput" placeholder="Type your SQL query here..." spellcheck="false"></textarea>
+                <div class="input-actions">
+                    <button class="btn btn-check" id="checkBtn">
+                        Check Answer
+                    </button>
+                    <button class="btn btn-clear" id="clearBtn">
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="feedback-box hidden" id="feedbackBox">
+                <div class="feedback-content" id="feedbackContent"></div>
+            </div>
+
             <div class="button-group">
                 <button class="btn btn-hint" id="hintBtn">
-                    💡 Show Hint
+                    Show Hint
                 </button>
                 <button class="btn btn-answer" id="answerBtn">
-                    ✓ Show Answer
+                    Show Answer
                 </button>
             </div>
 
             <div class="hint-box hidden" id="hintBox">
-                <h3>💡 Hint</h3>
+                <h3>Hint</h3>
                 <p id="hintContent"></p>
             </div>
 
             <div class="answer-box hidden" id="answerBox">
-                <h3>✓ Answer</h3>
+                <h3>Correct Answer</h3>
                 <pre><code id="answerContent"></code></pre>
             </div>
         </main>

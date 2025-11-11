@@ -1,15 +1,18 @@
 # SQL Practice Website
 
-A beautiful, interactive website to help you practice SQL concepts with 90+ questions covering all major SQL topics.
+A beautiful, interactive website to help you practice SQL with 90+ hands-on questions. Type your SQL queries and get instant feedback with intelligent answer checking!
 
 ## Features
 
 - **90+ SQL Questions** covering DDL, DML, DQL, Constraints, Functions, Joins, Subqueries, PL/SQL, and more
+- **Interactive SQL Input** - Type and test your SQL queries in a dedicated code editor
+- **Smart Answer Checking** - Intelligent validation that checks if your answer is correct or nearly correct
+- **Similarity Scoring** - Get feedback on how close your answer is (100%, 75%, 50% match)
 - **Interactive Hints** - Get helpful keywords and tips for each question
 - **Show/Hide Answers** - Reveal SQL solutions with syntax highlighting
 - **Progress Tracking** - Visual progress bar and automatic save of your position
-- **Keyboard Shortcuts** - Quick navigation for efficiency
-- **Beautiful UI** - Modern, gradient design with smooth animations
+- **Keyboard Shortcuts** - Quick navigation and answer checking for efficiency
+- **Claude-Inspired UI** - Clean, professional design with warm colors
 - **Responsive Design** - Works perfectly on desktop, tablet, and mobile
 
 ## How to Use
@@ -17,27 +20,39 @@ A beautiful, interactive website to help you practice SQL concepts with 90+ ques
 ### Getting Started
 
 1. Open `index.html` in your web browser
-2. Start practicing SQL questions one by one
-3. Your progress is automatically saved!
+2. Read the question and type your SQL query in the input area
+3. Click **"Check Answer"** or press **Ctrl/Cmd + Enter** to validate your answer
+4. Your progress is automatically saved!
+
+### Writing SQL Queries
+
+1. Type your SQL query in the code input area
+2. Click **"Check Answer"** to validate your solution
+3. Get instant feedback:
+   - **Perfect!** - 100% match, your answer is exactly correct
+   - **Nearly there!** - 75%+ match, very close with minor differences
+   - **Good attempt!** - 50-75% match, on the right track but needs work
+   - **Not quite right** - Below 50% match, try the hint or check the answer
+4. Use **"Clear"** button to reset your input
 
 ### Navigation
 
 - Click **"Next →"** to move to the next question
 - Click **"← Previous"** to go back
-- Use **Arrow Keys** (← →) for keyboard navigation
+- Use **Arrow Keys** (← →) for keyboard navigation (when not typing)
 
 ### Hints & Answers
 
-- Click **"💡 Show Hint"** to see helpful keywords
-- Click **"✓ Show Answer"** to reveal the SQL solution
+- Click **"Show Hint"** to see helpful keywords
+- Click **"Show Answer"** to reveal the SQL solution
 - Click again to hide
 
 ### Keyboard Shortcuts
 
-- `←` : Previous question
-- `→` : Next question
-- `H` : Toggle hint
-- `A` : Toggle answer
+- `Ctrl/Cmd + Enter` : Check your answer
+- `←` `→` : Previous/Next question (when not typing)
+- `H` : Toggle hint (when not typing)
+- `A` : Toggle answer (when not typing)
 
 ## Topics Covered
 
