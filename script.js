@@ -7,6 +7,11 @@ const questionNumberEl = document.getElementById('questionNumber');
 const questionTitleEl = document.getElementById('questionTitle');
 const questionDescriptionEl = document.getElementById('questionDescription');
 const sqlInput = document.getElementById('sqlInput');
+const lexInput = document.getElementById('lexInput');
+const yaccInput = document.getElementById('yaccInput');
+const yaccInputSection = document.getElementById('yaccInputSection');
+const lexInputLabel = document.getElementById('lexInputLabel');
+const yaccInputLabel = document.getElementById('yaccInputLabel');
 const checkBtn = document.getElementById('checkBtn');
 const clearBtn = document.getElementById('clearBtn');
 const hintBtn = document.getElementById('hintBtn');
@@ -17,6 +22,12 @@ const feedbackBox = document.getElementById('feedbackBox');
 const feedbackContent = document.getElementById('feedbackContent');
 const hintContent = document.getElementById('hintContent');
 const answerContent = document.getElementById('answerContent');
+const lexAnswerContent = document.getElementById('lexAnswerContent');
+const yaccAnswerContent = document.getElementById('yaccAnswerContent');
+const lexAnswerSection = document.getElementById('lexAnswerSection');
+const yaccAnswerSection = document.getElementById('yaccAnswerSection');
+const lexAnswerTitle = document.getElementById('lexAnswerTitle');
+const yaccAnswerTitle = document.getElementById('yaccAnswerTitle');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const progressFill = document.getElementById('progressFill');
@@ -24,6 +35,9 @@ const progressText = document.getElementById('progressText');
 const topicsToggle = document.getElementById('topicsToggle');
 const topicsDropdown = document.getElementById('topicsDropdown');
 const topicsGrid = document.getElementById('topicsGrid');
+
+// Determine which input mode we're in
+const isLexYaccMode = lexInput !== null;
 
 // Initialize the application
 function init() {
@@ -345,27 +359,85 @@ function levenshteinDistance(str1, str2) {
 
 // Check user's answer with improved logic
 function checkAnswer() {
-    const userAnswer = sqlInput.value.trim();
-    const correctAnswer = questions[currentQuestionIndex].answer;
+    const question = questions[currentQuestionIndex];
 
-    if (!userAnswer) {
-        showFeedback('incorrect', 'Please enter a SQL query', 'You need to write something before checking your answer.');
-        return;
-    }
+    if (isLexYaccMode) {
+        // Lex & Yacc mode
+        const userLexAnswer = lexInput.value.trim();
+        const correctLexAnswer = question.lexAnswer || question.answer;
 
-    const similarity = calculateSimilarity(userAnswer, correctAnswer);
+        if (!userLexAnswer) {
+            showFeedback('incorrect', 'Please enter your Lex code', 'You need to write something before checking your answer.');
+            return;
+        }
 
-    if (similarity === 100) {
-        showFeedback('correct', 'Perfect!', 'Your answer is correct! Well done!');
-    } else if (similarity >= 85) {
-        showFeedback('nearly-correct', 'Nearly there!',
-            `Your answer is very close (${similarity}% match). There might be minor syntax differences, but you've got the right idea!`);
-    } else if (similarity >= 65) {
-        showFeedback('nearly-correct', 'Good attempt!',
-            `You're on the right track (${similarity}% match). Check the structure and keywords. Consider reviewing the hint.`);
+        if (question.hasYacc) {
+            // Check both Lex and Yacc answers
+            const userYaccAnswer = yaccInput.value.trim();
+            const correctYaccAnswer = question.yaccAnswer;
+
+            if (!userYaccAnswer) {
+                showFeedback('incorrect', 'Please enter both Lex and Yacc code', 'You need to complete both files before checking your answer.');
+                return;
+            }
+
+            const lexSimilarity = calculateSimilarity(userLexAnswer, correctLexAnswer);
+            const yaccSimilarity = calculateSimilarity(userYaccAnswer, correctYaccAnswer);
+            const avgSimilarity = Math.round((lexSimilarity + yaccSimilarity) / 2);
+
+            if (lexSimilarity === 100 && yaccSimilarity === 100) {
+                showFeedback('correct', 'Perfect!', 'Both your Lex and Yacc files are correct! Well done!');
+            } else if (avgSimilarity >= 85) {
+                showFeedback('nearly-correct', 'Nearly there!',
+                    `Your answer is very close (Lex: ${lexSimilarity}%, Yacc: ${yaccSimilarity}%). There might be minor syntax differences, but you've got the right idea!`);
+            } else if (avgSimilarity >= 65) {
+                showFeedback('nearly-correct', 'Good attempt!',
+                    `You're on the right track (Lex: ${lexSimilarity}%, Yacc: ${yaccSimilarity}%). Check the structure and keywords. Consider reviewing the hint.`);
+            } else {
+                showFeedback('incorrect', 'Not quite right',
+                    `Your answer needs more work (Lex: ${lexSimilarity}%, Yacc: ${yaccSimilarity}%). Try using the hint to guide you, or check the correct answer to learn.`);
+            }
+        } else {
+            // Check only Lex answer
+            const similarity = calculateSimilarity(userLexAnswer, correctLexAnswer);
+
+            if (similarity === 100) {
+                showFeedback('correct', 'Perfect!', 'Your answer is correct! Well done!');
+            } else if (similarity >= 85) {
+                showFeedback('nearly-correct', 'Nearly there!',
+                    `Your answer is very close (${similarity}% match). There might be minor syntax differences, but you've got the right idea!`);
+            } else if (similarity >= 65) {
+                showFeedback('nearly-correct', 'Good attempt!',
+                    `You're on the right track (${similarity}% match). Check the structure and keywords. Consider reviewing the hint.`);
+            } else {
+                showFeedback('incorrect', 'Not quite right',
+                    `Your answer needs more work (${similarity}% match). Try using the hint to guide you, or check the correct answer to learn.`);
+            }
+        }
     } else {
-        showFeedback('incorrect', 'Not quite right',
-            `Your answer needs more work (${similarity}% match). Try using the hint to guide you, or check the correct answer to learn.`);
+        // SQL mode
+        const userAnswer = sqlInput.value.trim();
+        const correctAnswer = question.answer;
+
+        if (!userAnswer) {
+            showFeedback('incorrect', 'Please enter a SQL query', 'You need to write something before checking your answer.');
+            return;
+        }
+
+        const similarity = calculateSimilarity(userAnswer, correctAnswer);
+
+        if (similarity === 100) {
+            showFeedback('correct', 'Perfect!', 'Your answer is correct! Well done!');
+        } else if (similarity >= 85) {
+            showFeedback('nearly-correct', 'Nearly there!',
+                `Your answer is very close (${similarity}% match). There might be minor syntax differences, but you've got the right idea!`);
+        } else if (similarity >= 65) {
+            showFeedback('nearly-correct', 'Good attempt!',
+                `You're on the right track (${similarity}% match). Check the structure and keywords. Consider reviewing the hint.`);
+        } else {
+            showFeedback('incorrect', 'Not quite right',
+                `Your answer needs more work (${similarity}% match). Try using the hint to guide you, or check the correct answer to learn.`);
+        }
     }
 }
 
@@ -396,67 +468,87 @@ function showFeedback(type, title, message) {
 
 // Clear input
 function clearInput() {
-    sqlInput.value = '';
-    feedbackBox.classList.add('hidden');
-    sqlInput.focus();
+    if (isLexYaccMode) {
+        lexInput.value = '';
+        if (yaccInput) yaccInput.value = '';
+        feedbackBox.classList.add('hidden');
+        lexInput.focus();
+    } else {
+        sqlInput.value = '';
+        feedbackBox.classList.add('hidden');
+        sqlInput.focus();
+    }
 }
 
 // Setup textarea enhancements (Tab and Auto-indent)
 function setupTextareaEnhancements() {
-    sqlInput.addEventListener('keydown', function(e) {
-        // Handle Tab key - insert 4 spaces
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            const value = this.value;
+    // Helper function to add enhancements to a textarea
+    function enhanceTextarea(textarea) {
+        if (!textarea) return;
 
-            // Insert 4 spaces
-            this.value = value.substring(0, start) + '    ' + value.substring(end);
+        textarea.addEventListener('keydown', function(e) {
+            // Handle Tab key - insert 4 spaces
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
 
-            // Move cursor after the inserted spaces
-            this.selectionStart = this.selectionEnd = start + 4;
-            return;
-        }
+                // Insert 4 spaces
+                this.value = value.substring(0, start) + '    ' + value.substring(end);
 
-        // Handle Enter key - auto-indent
-        if (e.key === 'Enter') {
-            e.preventDefault();
-
-            const start = this.selectionStart;
-            const value = this.value;
-
-            // Get current line
-            const beforeCursor = value.substring(0, start);
-            const currentLineStart = beforeCursor.lastIndexOf('\n') + 1;
-            const currentLine = beforeCursor.substring(currentLineStart);
-
-            // Calculate current indentation
-            const indentMatch = currentLine.match(/^(\s*)/);
-            let indent = indentMatch ? indentMatch[1] : '';
-
-            // Check if line ends with opening bracket
-            const trimmedLine = currentLine.trim();
-            if (trimmedLine.endsWith('(')) {
-                indent += '    '; // Add extra indentation
+                // Move cursor after the inserted spaces
+                this.selectionStart = this.selectionEnd = start + 4;
+                return;
             }
 
-            // Insert newline with indentation
-            const newText = '\n' + indent;
-            this.value = value.substring(0, start) + newText + value.substring(this.selectionEnd);
+            // Handle Enter key - auto-indent
+            if (e.key === 'Enter') {
+                e.preventDefault();
 
-            // Move cursor to end of inserted text
-            this.selectionStart = this.selectionEnd = start + newText.length;
-            return;
-        }
+                const start = this.selectionStart;
+                const value = this.value;
 
-        // Handle Ctrl/Cmd + Enter to check answer
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            checkAnswer();
-            return;
-        }
-    });
+                // Get current line
+                const beforeCursor = value.substring(0, start);
+                const currentLineStart = beforeCursor.lastIndexOf('\n') + 1;
+                const currentLine = beforeCursor.substring(currentLineStart);
+
+                // Calculate current indentation
+                const indentMatch = currentLine.match(/^(\s*)/);
+                let indent = indentMatch ? indentMatch[1] : '';
+
+                // Check if line ends with opening bracket
+                const trimmedLine = currentLine.trim();
+                if (trimmedLine.endsWith('(')) {
+                    indent += '    '; // Add extra indentation
+                }
+
+                // Insert newline with indentation
+                const newText = '\n' + indent;
+                this.value = value.substring(0, start) + newText + value.substring(this.selectionEnd);
+
+                // Move cursor to end of inserted text
+                this.selectionStart = this.selectionEnd = start + newText.length;
+                return;
+            }
+
+            // Handle Ctrl/Cmd + Enter to check answer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                checkAnswer();
+                return;
+            }
+        });
+    }
+
+    // Apply enhancements based on mode
+    if (isLexYaccMode) {
+        enhanceTextarea(lexInput);
+        enhanceTextarea(yaccInput);
+    } else {
+        enhanceTextarea(sqlInput);
+    }
 }
 
 // Load a specific question
@@ -469,11 +561,58 @@ function loadQuestion(index) {
     questionTitleEl.textContent = question.title;
     questionDescriptionEl.textContent = question.description;
     hintContent.textContent = question.hint;
-    answerContent.textContent = question.answer;
 
-    // Clear input and feedback
-    sqlInput.value = '';
-    feedbackBox.classList.add('hidden');
+    if (isLexYaccMode) {
+        // Lex & Yacc mode
+        if (question.hasYacc) {
+            // Show both inputs
+            yaccInputSection.classList.remove('hidden');
+            lexInputLabel.textContent = question.lexTitle || 'Lex File:';
+            yaccInputLabel.textContent = question.yaccTitle || 'Yacc File:';
+
+            // Update answer sections
+            if (lexAnswerContent && yaccAnswerContent) {
+                lexAnswerContent.textContent = question.lexAnswer;
+                yaccAnswerContent.textContent = question.yaccAnswer;
+                lexAnswerTitle.textContent = question.lexTitle || 'Lex File';
+                yaccAnswerTitle.textContent = question.yaccTitle || 'Yacc File';
+                yaccAnswerSection.classList.remove('hidden');
+            }
+        } else {
+            // Show only Lex input
+            yaccInputSection.classList.add('hidden');
+            lexInputLabel.textContent = 'Your Code:';
+
+            // Update answer sections
+            if (lexAnswerContent) {
+                lexAnswerContent.textContent = question.answer;
+                lexAnswerTitle.textContent = 'Correct Answer';
+                if (yaccAnswerSection) {
+                    yaccAnswerSection.classList.add('hidden');
+                }
+            }
+        }
+
+        // Clear inputs and feedback
+        lexInput.value = '';
+        if (yaccInput) yaccInput.value = '';
+        feedbackBox.classList.add('hidden');
+
+        // Focus on first input
+        setTimeout(() => lexInput.focus(), 300);
+    } else {
+        // SQL mode
+        if (answerContent) {
+            answerContent.textContent = question.answer;
+        }
+
+        // Clear input and feedback
+        sqlInput.value = '';
+        feedbackBox.classList.add('hidden');
+
+        // Focus on input
+        setTimeout(() => sqlInput.focus(), 300);
+    }
 
     // Hide hint and answer boxes
     hintBox.classList.add('hidden');
@@ -488,9 +627,6 @@ function loadQuestion(index) {
 
     // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Focus on input
-    setTimeout(() => sqlInput.focus(), 300);
 }
 
 // Update progress bar

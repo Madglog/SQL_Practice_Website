@@ -1,12 +1,13 @@
 // Lex and Yacc Programs - Practice Questions
 
 const lexYaccQuestions = [
-    // Lex Pattern Matching Programs
+    // Lex-only Programs (1-7)
     {
         category: "Lex - Pattern Matching",
         title: "Valid Email (Gmail)",
         description: "Write a Lex program to validate Gmail email addresses. The email should start with letters, followed by letters/numbers, and end with @gmail.com",
         hint: "Use pattern matching with [a-zA-Z]+ for initial, [a-zA-Z0-9]* for rest, and literal @gmail.com",
+        hasYacc: false,
         answer: `%option noyywrap
 %{
 #include <stdio.h>
@@ -28,6 +29,7 @@ int main(){
         title: "Valid Phone Number",
         description: "Write a Lex program to validate Indian mobile numbers (10 digits starting with 6-9).",
         hint: "Use [6-9] for first digit, [0-9] for remaining 9 digits",
+        hasYacc: false,
         answer: `%option noyywrap
 %{
 #include <stdio.h>
@@ -48,6 +50,7 @@ int main(){
         title: "Valid URL",
         description: "Write a Lex program to validate website URLs ending with .com or .ac.in",
         hint: "Use [a-zA-Z]+ for website name, match .com and .ac.in separately",
+        hasYacc: false,
         answer: `%option noyywrap
 %{
 #include <stdio.h>
@@ -68,6 +71,7 @@ int main(){
         title: "Count Characters, Words, Lines",
         description: "Write a Lex program to count the number of characters, words, and lines in input.",
         hint: "Use global counters, \\n for lines, [ \\t]+ for whitespace, [^ \\t\\n]+ for words",
+        hasYacc: false,
         answer: `%{
 #include <stdio.h>
 int char_count = 0;
@@ -107,6 +111,7 @@ int main(int argc, char *argv[]) {
         title: "Replace Tabs with Spaces",
         description: "Write a Lex program to replace all tab characters (\\t) with 4 spaces.",
         hint: "Match \\t and printf 4 spaces, use ECHO for other characters",
+        hasYacc: false,
         answer: `%{
 #include <stdio.h>
 %}
@@ -128,6 +133,7 @@ int main(void) {
         title: "Count Words Length 5-10",
         description: "Write a Lex program to count words with length between 5 and 10 characters.",
         hint: "Match [a-zA-Z0-9]+, use yyleng to get length, check if 5 <= len <= 10",
+        hasYacc: false,
         answer: `%{
 #include <stdio.h>
 int word_count = 0;
@@ -166,6 +172,7 @@ int main(int argc, char *argv[]) {
         title: "Count Comments (Single & Multi-line)",
         description: "Write a Lex program to count single-line (//) and multi-line (/* */) comments in C/C++ code.",
         hint: "Use //.* for single-line, complex regex for multi-line /* */",
+        hasYacc: false,
         answer: `%{
 #include <stdio.h>
 int multi_line = 0;
@@ -200,6 +207,7 @@ int yywrap(void) {
         title: "Lexical Analyzer for C Subset",
         description: "Write a Lex program to identify and categorize tokens: keywords, identifiers, operators, numbers, and separators.",
         hint: "Create isKeyword function, match numbers, identifiers, operators, and separators separately",
+        hasYacc: false,
         answer: `%{
 #include <stdio.h>
 #include <string.h>
@@ -249,13 +257,16 @@ int main() {
 }`
     },
 
-    // Yacc Parser Programs
+    // Combined Lex+Yacc Programs (9-13)
     {
-        category: "Yacc - Expression Evaluation",
-        title: "Arithmetic Expression Evaluator (Lex File)",
-        description: "Write the Lex file (expr.l) for an arithmetic expression evaluator. Match numbers, operators (+, -, *, /), and parentheses.",
-        hint: "Return NUMBER token for digits, return operator characters directly",
-        answer: `%{
+        category: "Lex+Yacc - Expression Evaluation",
+        title: "Arithmetic Expression Evaluator",
+        description: "Write both the Lex file (expr.l) and Yacc file (expr.y) for an arithmetic expression evaluator with proper precedence and division by zero handling.",
+        hint: "Lex: Return NUMBER token for digits, return operator characters directly. Yacc: Use %left for precedence, handle division by zero",
+        hasYacc: true,
+        lexTitle: "expr.l (Lex File)",
+        yaccTitle: "expr.y (Yacc File)",
+        lexAnswer: `%{
 #include "expr.tab.h"
 %}
 %%
@@ -272,14 +283,8 @@ int main() {
 %%
 int yywrap() {
     return 1;
-}`
-    },
-    {
-        category: "Yacc - Expression Evaluation",
-        title: "Arithmetic Expression Evaluator (Yacc File)",
-        description: "Write the Yacc file (expr.y) for evaluating arithmetic expressions with proper precedence and division by zero handling.",
-        hint: "Use %left for precedence, handle division by zero in expr/expr rule",
-        answer: `%{
+}`,
+        yaccAnswer: `%{
 #include <stdio.h>
 #include <stdlib.h>
 int yylex(void);
@@ -324,11 +329,14 @@ int main() {
 }`
     },
     {
-        category: "Yacc - Expression Evaluation",
-        title: "Postfix Expression Evaluator (Lex File)",
-        description: "Write the Lex file (postfix.l) for a postfix expression evaluator.",
-        hint: "Match numbers and return NUMBER token, return operators as characters",
-        answer: `%{
+        category: "Lex+Yacc - Expression Evaluation",
+        title: "Postfix Expression Evaluator",
+        description: "Write both the Lex file (postfix.l) and Yacc file (postfix.y) to evaluate postfix (RPN) expressions like '5 3 +' = 8.",
+        hint: "Lex: Match numbers and return NUMBER token. Yacc: Use expr expr '+' pattern for postfix, stack-based evaluation",
+        hasYacc: true,
+        lexTitle: "postfix.l (Lex File)",
+        yaccTitle: "postfix.y (Yacc File)",
+        lexAnswer: `%{
 #include "y.tab.h"
 #include <stdlib.h>
 %}
@@ -340,14 +348,8 @@ int main() {
 %%
 int yywrap(void) {
     return 1;
-}`
-    },
-    {
-        category: "Yacc - Expression Evaluation",
-        title: "Postfix Expression Evaluator (Yacc File)",
-        description: "Write the Yacc file (postfix.y) to evaluate postfix (RPN) expressions like '5 3 +' = 8.",
-        hint: "Use expr expr '+' pattern for postfix, stack-based evaluation",
-        answer: `%{
+}`,
+        yaccAnswer: `%{
 #include <stdio.h>
 #include <ctype.h>
 void yyerror(char *s);
@@ -387,11 +389,14 @@ void yyerror(char *s) {
 }`
     },
     {
-        category: "Yacc - Keyword Checker",
-        title: "Keyword Checker (Lex File)",
-        description: "Write the Lex file (keyword.l) to identify C keywords (if, else, while, return, int, float, char) vs identifiers.",
-        hint: "Match exact keywords with | operator, return KEYWORD or IDENTIFIER tokens",
-        answer: `%{
+        category: "Lex+Yacc - Keyword Checker",
+        title: "Keyword Checker",
+        description: "Write both the Lex file (keyword.l) and Yacc file (keyword.y) to identify C keywords (if, else, while, return, int, float, char) and check if input is a keyword or not.",
+        hint: "Lex: Match exact keywords with | operator, return KEYWORD or IDENTIFIER tokens. Yacc: Create rules for both, print appropriate message",
+        hasYacc: true,
+        lexTitle: "keyword.l (Lex File)",
+        yaccTitle: "keyword.y (Yacc File)",
+        lexAnswer: `%{
 #include "keyword.tab.h"
 #include <string.h>
 %}
@@ -404,14 +409,8 @@ if|else|while|return|int|float|char { return KEYWORD; }
 %%
 int yywrap() {
     return 1;
-}`
-    },
-    {
-        category: "Yacc - Keyword Checker",
-        title: "Keyword Checker (Yacc File)",
-        description: "Write the Yacc file (keyword.y) to check if input is a keyword or not.",
-        hint: "Create rules for KEYWORD and IDENTIFIER, print appropriate message",
-        answer: `%{
+}`,
+        yaccAnswer: `%{
 #include <stdio.h>
 #include <string.h>
 void yyerror(const char *s);
@@ -439,11 +438,14 @@ int main() {
 }`
     },
     {
-        category: "Yacc - Palindrome Checker",
-        title: "Palindrome Checker (Lex File)",
-        description: "Write the Lex file (palindrome.l) to recognize individual characters for palindrome checking.",
-        hint: "Match [a-zA-Z0-9] and return CHAR token with character value",
-        answer: `%{
+        category: "Lex+Yacc - Palindrome Checker",
+        title: "Palindrome Checker",
+        description: "Write both the Lex file (palindrome.l) and Yacc file (palindrome.y) to check if a string is a palindrome by comparing characters from both ends.",
+        hint: "Lex: Match [a-zA-Z0-9] and return CHAR token. Yacc: Build string in array, compare first and last characters iteratively",
+        hasYacc: true,
+        lexTitle: "palindrome.l (Lex File)",
+        yaccTitle: "palindrome.y (Yacc File)",
+        lexAnswer: `%{
 #include "y.tab.h"
 %}
 %%
@@ -453,14 +455,8 @@ int main() {
 %%
 int yywrap() {
     return 1;
-}`
-    },
-    {
-        category: "Yacc - Palindrome Checker",
-        title: "Palindrome Checker (Yacc File)",
-        description: "Write the Yacc file (palindrome.y) to check if a string is a palindrome by comparing characters from both ends.",
-        hint: "Build string in array, compare first and last characters iteratively",
-        answer: `%{
+}`,
+        yaccAnswer: `%{
 #include <stdio.h>
 #include <string.h>
 void yyerror(const char *s);
@@ -509,11 +505,14 @@ int main() {
 }`
     },
     {
-        category: "Yacc - Control Structures",
-        title: "Nested If Statements (Lex File)",
-        description: "Write the Lex file (nested_if.l) to tokenize if-else statements, identifiers, numbers, and relational operators.",
-        hint: "Return IF, ELSE, ID, NUMBER, RELOP tokens appropriately",
-        answer: `%{
+        category: "Lex+Yacc - Control Structures",
+        title: "Nested If Statements",
+        description: "Write both the Lex file (nested_if.l) and Yacc file (nested_if.y) to parse nested if-else statements with proper precedence to avoid dangling else.",
+        hint: "Lex: Return IF, ELSE, ID, NUMBER, RELOP tokens. Yacc: Use %prec to handle if-then-else ambiguity",
+        hasYacc: true,
+        lexTitle: "nested_if.l (Lex File)",
+        yaccTitle: "nested_if.y (Yacc File)",
+        lexAnswer: `%{
 #include "y.tab.h"
 %}
 %%
@@ -527,14 +526,8 @@ int main() {
 %%
 int yywrap(void) {
     return 1;
-}`
-    },
-    {
-        category: "Yacc - Control Structures",
-        title: "Nested If Statements (Yacc File)",
-        description: "Write the Yacc file (nested_if.y) to parse nested if-else statements with proper precedence to avoid dangling else.",
-        hint: "Use %prec to handle if-then-else ambiguity, print when statements are parsed",
-        answer: `%{
+}`,
+        yaccAnswer: `%{
 #include <stdio.h>
 #include <stdlib.h>
 void yyerror(char *s);

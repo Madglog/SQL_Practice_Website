@@ -315,7 +315,7 @@ header h1 {
 
 /* SQL Input Section */
 .sql-input-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding: 1.5rem;
     background: var(--bg-secondary);
     border-radius: 12px;
@@ -330,7 +330,12 @@ header h1 {
     font-size: 0.95rem;
 }
 
-#sqlInput {
+.sql-input-section label::before {
+    content: '📝 ';
+    opacity: 0.7;
+}
+
+#sqlInput, #lexInput, #yaccInput {
     width: 100%;
     min-height: 150px;
     padding: 1rem;
@@ -570,6 +575,13 @@ header h1 {
     line-height: 1.6;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+/* Dual Answer Sections */
+#yaccAnswerSection {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px dashed var(--border-color);
 }
 
 .hidden {

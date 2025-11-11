@@ -19,7 +19,7 @@
 
         <header>
             <h1>⚙️ Lex & Yacc Practice</h1>
-            <p class="subtitle">Master Lexical Analysis and Parsing - 17 Programs</p>
+            <p class="subtitle">Master Lexical Analysis and Parsing - 13 Programs</p>
             <div class="schema-info">
                 <strong>Topics:</strong> Pattern Matching, Text Processing, Comment Detection, Lexical Analyzers,
                 Expression Evaluation, Keyword Checking, Palindromes, Control Structures
@@ -39,13 +39,13 @@
 
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
-            <span class="progress-text" id="progressText">Question 1 of 17</span>
+            <span class="progress-text" id="progressText">Question 1 of 13</span>
         </div>
 
         <main class="card">
             <div class="question-header">
                 <span class="category" id="category">Lex</span>
-                <span class="question-number" id="questionNumber">1/17</span>
+                <span class="question-number" id="questionNumber">1/13</span>
             </div>
 
             <div class="question-content">
@@ -53,17 +53,25 @@
                 <p id="questionDescription"></p>
             </div>
 
+            <!-- Lex Input Section (always shown) -->
             <div class="sql-input-section">
-                <label for="sqlInput">Your Code:</label>
-                <textarea id="sqlInput" placeholder="Type your Lex/Yacc code here..." spellcheck="false"></textarea>
-                <div class="input-actions">
-                    <button class="btn btn-check" id="checkBtn">
-                        Check Answer
-                    </button>
-                    <button class="btn btn-clear" id="clearBtn">
-                        Clear
-                    </button>
-                </div>
+                <label for="lexInput" id="lexInputLabel">Your Code:</label>
+                <textarea id="lexInput" placeholder="Type your Lex code here..." spellcheck="false"></textarea>
+            </div>
+
+            <!-- Yacc Input Section (shown only for combined questions) -->
+            <div class="sql-input-section hidden" id="yaccInputSection">
+                <label for="yaccInput" id="yaccInputLabel">Yacc Code:</label>
+                <textarea id="yaccInput" placeholder="Type your Yacc code here..." spellcheck="false"></textarea>
+            </div>
+
+            <div class="input-actions">
+                <button class="btn btn-check" id="checkBtn">
+                    Check Answer
+                </button>
+                <button class="btn btn-clear" id="clearBtn">
+                    Clear
+                </button>
             </div>
 
             <div class="feedback-box hidden" id="feedbackBox">
@@ -85,8 +93,14 @@
             </div>
 
             <div class="answer-box hidden" id="answerBox">
-                <h3>Correct Answer</h3>
-                <pre><code id="answerContent"></code></pre>
+                <div id="lexAnswerSection">
+                    <h3 id="lexAnswerTitle">Correct Answer</h3>
+                    <pre><code id="lexAnswerContent"></code></pre>
+                </div>
+                <div id="yaccAnswerSection" class="hidden">
+                    <h3 id="yaccAnswerTitle">Yacc File</h3>
+                    <pre><code id="yaccAnswerContent"></code></pre>
+                </div>
             </div>
         </main>
 
