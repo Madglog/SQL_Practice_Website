@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Practice - Master Your Database Skills</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗄️ SQL Practice Hub</h1>
+            <p class="subtitle">Master SQL concepts one question at a time</p>
+        </header>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+            <span class="progress-text" id="progressText">Question 1 of 90</span>
+        </div>
+
+        <main class="card">
+            <div class="question-header">
+                <span class="category" id="category">DDL</span>
+                <span class="question-number" id="questionNumber">1/90</span>
+            </div>
+
+            <div class="question-content">
+                <h2 id="questionTitle">Loading...</h2>
+                <p id="questionDescription"></p>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-hint" id="hintBtn">
+                    💡 Show Hint
+                </button>
+                <button class="btn btn-answer" id="answerBtn">
+                    ✓ Show Answer
+                </button>
+            </div>
+
+            <div class="hint-box hidden" id="hintBox">
+                <h3>💡 Hint</h3>
+                <p id="hintContent"></p>
+            </div>
+
+            <div class="answer-box hidden" id="answerBox">
+                <h3>✓ Answer</h3>
+                <pre><code id="answerContent"></code></pre>
+            </div>
+        </main>
+
+        <nav class="navigation">
+            <button class="btn btn-nav" id="prevBtn">
+                ← Previous
+            </button>
+            <button class="btn btn-nav btn-nav-primary" id="nextBtn">
+                Next →
+            </button>
+        </nav>
+
+        <footer>
+            <p>Practice makes perfect! Keep coding 💻</p>
+        </footer>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
