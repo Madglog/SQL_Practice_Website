@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Practice - Master Your Database Skills</title>
+    <title>Lex & Yacc Practice</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,14 +12,18 @@
 <body>
     <div class="container">
         <div class="section-nav">
-            <a href="index.html" class="section-link active">📚 SQL Practice</a>
+            <a href="index.html" class="section-link">📚 SQL Practice</a>
             <a href="test.html" class="section-link">🎯 SQL Test</a>
-            <a href="lex-yacc.html" class="section-link">⚙️ Lex & Yacc</a>
+            <a href="lex-yacc.html" class="section-link active">⚙️ Lex & Yacc</a>
         </div>
 
         <header>
-            <h1>🗄️ SQL Practice Hub</h1>
-            <p class="subtitle">Master SQL concepts one question at a time</p>
+            <h1>⚙️ Lex & Yacc Practice</h1>
+            <p class="subtitle">Master Lexical Analysis and Parsing - 17 Programs</p>
+            <div class="schema-info">
+                <strong>Topics:</strong> Pattern Matching, Text Processing, Comment Detection, Lexical Analyzers,
+                Expression Evaluation, Keyword Checking, Palindromes, Control Structures
+            </div>
         </header>
 
         <div class="topics-section">
@@ -35,13 +39,13 @@
 
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
-            <span class="progress-text" id="progressText">Question 1 of 90</span>
+            <span class="progress-text" id="progressText">Question 1 of 17</span>
         </div>
 
         <main class="card">
             <div class="question-header">
-                <span class="category" id="category">DDL</span>
-                <span class="question-number" id="questionNumber">1/90</span>
+                <span class="category" id="category">Lex</span>
+                <span class="question-number" id="questionNumber">1/17</span>
             </div>
 
             <div class="question-content">
@@ -50,8 +54,8 @@
             </div>
 
             <div class="sql-input-section">
-                <label for="sqlInput">Your SQL Answer:</label>
-                <textarea id="sqlInput" placeholder="Type your SQL query here..." spellcheck="false"></textarea>
+                <label for="sqlInput">Your Code:</label>
+                <textarea id="sqlInput" placeholder="Type your Lex/Yacc code here..." spellcheck="false"></textarea>
                 <div class="input-actions">
                     <button class="btn btn-check" id="checkBtn">
                         Check Answer
@@ -96,11 +100,15 @@
         </nav>
 
         <footer>
-            <p>Practice makes perfect! Keep coding 💻</p>
+            <p>Master compiler construction! Keep coding ⚙️</p>
         </footer>
     </div>
 
-    <script src="questions.js"></script>
+    <script src="lex-yacc-questions.js"></script>
+    <script>
+        // Use Lex & Yacc questions
+        const questions = lexYaccQuestions;
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
